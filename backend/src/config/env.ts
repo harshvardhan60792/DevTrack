@@ -35,17 +35,21 @@ const isRender = process.env.RENDER === 'true';
 const defaultEnv = isRender ? 'production' : 'development';
 const NODE_ENV = getEnvVar('NODE_ENV', defaultEnv);
 
-function getCorsOrigin(): string {
-  const origin = getEnvVar('CORS_ORIGIN', 'http://localhost:5173');
-  const isProd = NODE_ENV === 'production';
+// Plain-HTTP localhost origins are fine for a production build run on one machine
+// (docker-compose.prod.yml), because the traffic never leaves the host.
+const LOCAL_HTTP_ORIGIN = /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/;
 
-  // In production, validate it's an HTTPS origin
-  if (isProd) {
-    if (!origin.startsWith('https://')) {
-      throw new Error(`CORS_ORIGIN must use HTTPS in production. Got: ${origin}`);
-    }
+export function validateCorsOrigin(origin: string, isProd: boolean): string {
+  // In production, validate it's an HTTPS origin (or a local simulation origin)
+  if (isProd && !origin.startsWith('https://') && !LOCAL_HTTP_ORIGIN.test(origin)) {
+    throw new Error(`CORS_ORIGIN must use HTTPS in production (http is only allowed for localhost). Got: ${origin}`);
   }
   return origin;
+}
+
+function getCorsOrigin(): string {
+  const origin = getEnvVar('CORS_ORIGIN', 'http://localhost:5173');
+  return validateCorsOrigin(origin, NODE_ENV === 'production');
 }
 
 const IS_PROD = NODE_ENV === 'production';

@@ -151,6 +151,12 @@ when `.env.production` supplies values used in Compose interpolation (for exampl
 `MONGODB_URI`, `MONGO_USER`, `MONGO_PASS`, or `API_PORT`). The file is also loaded
 into backend containers when present; it is optional for configuration parsing.
 
+For a production build run on one machine, the compose file sets `CORS_ORIGIN=http://localhost`
+and `ALLOW_MISSING_AI_KEYS=true` by default. `http://` origins are accepted only for `localhost`
+and `127.0.0.1`; any real deployment still needs an HTTPS `CORS_ORIGIN`. Without
+`ALLOW_MISSING_AI_KEYS=true` the API refuses to start in production unless `OPENAI_API_KEY` or
+`GEMINI_API_KEY` is set.
+
 ### Shell deploy script
 
 ```bash

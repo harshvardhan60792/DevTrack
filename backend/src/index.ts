@@ -100,9 +100,15 @@ async function bootstrap() {
 
   if (env.IS_PROD) {
     if (!process.env.OPENAI_API_KEY && !env.GEMINI_API_KEY) {
-      logger.error('CRITICAL: At least one AI API key (OPENAI_API_KEY or GEMINI_API_KEY) must be set in production');
-      logger.error('Intelligence features will be degraded without AI API keys');
-      process.exit(1);
+      if (process.env.ALLOW_MISSING_AI_KEYS === 'true') {
+        // Local production simulation (docker-compose.prod.yml): keep booting without AI keys
+        logger.warn('WARNING: No AI API keys set. Intelligence features will use mock/fallback responses.');
+      } else {
+        logger.error('CRITICAL: At least one AI API key (OPENAI_API_KEY or GEMINI_API_KEY) must be set in production');
+        logger.error('Intelligence features will be degraded without AI API keys');
+        logger.error('Set ALLOW_MISSING_AI_KEYS=true to start anyway (local production simulation only)');
+        process.exit(1);
+      }
     }
   } else {
     // Development mode: warn but allow startup

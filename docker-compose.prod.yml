@@ -42,6 +42,10 @@ services:
       - ENABLE_WORKERS=false
       - NODE_ENV=production
       - PORT=3001
+      # http is accepted for localhost only; use your real https origin when deploying
+      - CORS_ORIGIN=${CORS_ORIGIN:-http://localhost}
+      # Lets a local production run start without AI keys. Leave unset in the cloud.
+      - ALLOW_MISSING_AI_KEYS=${ALLOW_MISSING_AI_KEYS:-true}
       - MONGODB_URI=${MONGODB_URI:-mongodb://${MONGO_USER:-devtrack}:${MONGO_PASS:-devtrack}@mongo:27017/devtrack?authSource=admin}
       - REDIS_HOST=redis
       - REDIS_PORT=6379
